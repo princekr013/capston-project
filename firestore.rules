@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User Profile Rules
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.keys().hasAll(['uid', 'email']) &&
+               data.uid is string && data.uid.size() <= 128 &&
+               data.email is string && data.email.size() <= 256;
+      }
+
+      allow get: if isSignedIn();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && 
+                      isValidUser(request.resource.data) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'likedSongs']);
+    }
+
+    // Songs - Publicly readable, admin write only (simulated)
+    match /songs/{songId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Only system can write songs for now
+    }
+
+    // Playlists
+    match /playlists/{playlistId} {
+      function isValidPlaylist(data) {
+        return data.keys().hasAll(['name', 'ownerId']) &&
+               data.name is string && data.name.size() <= 100 &&
+               data.ownerId == request.auth.uid;
+      }
+
+      allow list: if isSignedIn() && (resource.data.isPublic == true || resource.data.ownerId == request.auth.uid);
+      allow get: if isSignedIn();
+      allow create: if isSignedIn() && isValidPlaylist(request.resource.data);
+      allow update: if isOwner(resource.data.ownerId) && 
+                      isValidPlaylist(request.resource.data) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'songIds', 'isPublic']);
+      allow delete: if isOwner(resource.data.ownerId);
+    }
+  }
+}

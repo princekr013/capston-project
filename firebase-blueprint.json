@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "likedSongs": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Song": {
+      "title": "Song",
+      "description": "Music track metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "artist": { "type": "string" },
+        "album": { "type": "string" },
+        "coverUrl": { "type": "string" },
+        "audioUrl": { "type": "string" },
+        "duration": { "type": "number" },
+        "genre": { "type": "string" }
+      },
+      "required": ["title", "artist", "audioUrl"]
+    },
+    "Playlist": {
+      "title": "Playlist",
+      "description": "User-curated song collection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "songIds": { "type": "array", "items": { "type": "string" } },
+        "isPublic": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "songs/{songId}": {
+      "schema": "Song",
+      "description": "Song library"
+    },
+    "playlists/{playlistId}": {
+      "schema": "Playlist",
+      "description": "User playlists"
+    }
+  }
+}

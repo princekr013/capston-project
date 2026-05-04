@@ -1,0 +1,6 @@
+{
+  "name": "Spotify Clone",
+  "description": "A full-stack music streaming platform with user authentication, playlists, and a dynamic audio player.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
